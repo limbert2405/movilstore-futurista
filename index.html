@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MovilStore — Smartphones Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="goto('home')">
+      <svg width="30" height="30" viewBox="0 0 22 22" fill="none">
+        <rect width="22" height="22" rx="6" fill="#fff"/>
+        <rect x="6.5" y="3" width="9" height="16" rx="2.5" stroke="#000" stroke-width="1.4"/>
+        <circle cx="11" cy="17" r="1.2" fill="#000"/>
+      </svg>
+      <span class="nav-brand"><b>Movil</b><em>Store</em><small>TECNOLOGÍA PREMIUM</small></span>
+    </div>
+    <ul class="nav-links">
+      <li><a class="nav-a active" id="lnk-home"     onclick="goto('home')">Inicio</a></li>
+      <li><a class="nav-a"        id="lnk-products" onclick="goto('products')">Productos</a></li>
+      <li><a class="nav-a" id="lnk-accessories" onclick="goto('products','Accesorios')">Accesorios</a></li>
+      <li><a class="nav-a" id="lnk-offers" onclick="goto('products','Ofertas')">Ofertas</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="nav-icon" onclick="openCart()" aria-label="Carrito">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-badge" id="cart-badge">0</span>
+      </button>
+      <button class="nav-icon account-trigger" onclick="openAccount()" aria-label="Mi cuenta" title="Mi cuenta">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="account-dot" id="account-dot"></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- CARRITO -->
+<div class="cart-bg" id="cart-bg" onclick="closeCart()"></div>
+<aside class="cart" id="cart">
+  <div class="cart-head">
+    <span class="cart-title">Carrito</span>
+    <button class="cart-x" onclick="closeCart()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="cart-body" id="cart-body"></div>
+  <div class="cart-foot">
+    <div class="cart-total-row">
+      <span>Total</span>
+      <span class="cart-total" id="cart-total">S/ 0</span>
+    </div>
+    <button class="btn-checkout" onclick="startCheckout()">Continuar al pago →</button>
+  </div>
+</aside>
+
+<!-- CHECKOUT / PAGO DE DEMOSTRACIÓN -->
+<div class="checkout-bg" id="checkout-bg" onclick="closeCheckout()">
+  <section class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title" onclick="event.stopPropagation()">
+    <button class="checkout-close" onclick="closeCheckout()" aria-label="Cerrar">×</button>
+    <div class="checkout-main" id="checkout-main">
+      <div class="checkout-kicker">PAGO SEGURO · DEMO ACADÉMICA</div>
+      <h2 id="checkout-title">Finaliza tu compra</h2>
+      <p class="checkout-sub">Elige tu método de pago. No se realizará ningún cobro real.</p>
+
+      <div class="payment-methods">
+        <button class="payment-method active" type="button" data-method="yape" onclick="selectPayment('yape',this)"><span>Y</span><b>Yape</b></button>
+        <button class="payment-method" type="button" data-method="plin" onclick="selectPayment('plin',this)"><span>P</span><b>Plin</b></button>
+        <button class="payment-method" type="button" data-method="card" onclick="selectPayment('card',this)"><span>▣</span><b>Tarjeta</b></button>
+      </div>
+
+      <form id="checkout-form" onsubmit="processPayment(event)" novalidate>
+        <input type="hidden" id="payment-method" value="yape">
+        <div class="payment-panel active" id="panel-yape">
+          <div class="wallet-banner yape"><span>Y</span><div><b>Paga con Yape</b><small>Usa el número asociado a tu cuenta</small></div></div>
+          <label>Número de celular<input id="yape-phone" inputmode="numeric" maxlength="9" placeholder="987 654 321" autocomplete="tel"></label>
+          <label>Código de aprobación<input id="yape-code" inputmode="numeric" maxlength="6" placeholder="6 dígitos"></label>
+        </div>
+        <div class="payment-panel" id="panel-plin">
+          <div class="wallet-banner plin"><span>P</span><div><b>Paga con Plin</b><small>Ingresa tu número y código de verificación</small></div></div>
+          <label>Número de celular<input id="plin-phone" inputmode="numeric" maxlength="9" placeholder="987 654 321" autocomplete="tel"></label>
+          <label>Código de verificación<input id="plin-code" inputmode="numeric" maxlength="6" placeholder="6 dígitos"></label>
+        </div>
+        <div class="payment-panel" id="panel-card">
+          <div class="card-preview"><span>MOVILSTORE</span><b id="card-preview-number">•••• •••• •••• ••••</b><small id="card-preview-name">NOMBRE DEL TITULAR</small></div>
+          <label>Nombre del titular<input id="card-name" maxlength="40" placeholder="Como aparece en la tarjeta" autocomplete="cc-name"></label>
+          <label>Número de tarjeta<input id="card-number" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000" autocomplete="cc-number" oninput="formatCardNumber(this)"></label>
+          <div class="field-row"><label>Vencimiento<input id="card-expiry" inputmode="numeric" maxlength="5" placeholder="MM/AA" autocomplete="cc-exp" oninput="formatExpiry(this)"></label><label>CVV<input id="card-cvv" inputmode="numeric" maxlength="3" placeholder="123" autocomplete="cc-csc"></label></div>
+        </div>
+        <p class="form-error" id="payment-error" aria-live="polite"></p>
+        <button class="pay-button" id="pay-button" type="submit"><span>Pagar</span><strong id="pay-total">S/ 0</strong></button>
+      </form>
+    </div>
+    <div class="purchase-success" id="purchase-success">
+      <div class="success-ring">✓</div>
+      <div class="checkout-kicker">PAGO CONFIRMADO</div>
+      <h2>¡Compra exitosa!</h2>
+      <p>Tu pedido fue registrado correctamente. Te enviaremos la confirmación y los detalles de entrega.</p>
+      <div class="order-code">PEDIDO <b id="order-code">MS-000000</b></div>
+      <button class="pay-button success-button" onclick="finishPurchase()"><span>Seguir comprando</span><strong>→</strong></button>
+    </div>
+  </section>
+</div>
+
+<!-- MI CUENTA -->
+<div class="account-bg" id="account-bg" onclick="closeAccount()">
+  <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="account-title" onclick="event.stopPropagation()">
+    <button class="account-close" onclick="closeAccount()" aria-label="Cerrar">×</button>
+
+    <div class="account-auth" id="account-auth">
+      <div class="account-logo">MS</div>
+      <div class="checkout-kicker">ÁREA DE CLIENTES</div>
+      <h2 id="account-title">Bienvenido a MovilStore</h2>
+      <p>Accede a tu cuenta para guardar y consultar tus pedidos.</p>
+      <div class="account-tabs">
+        <button class="account-tab active" type="button" onclick="showAccountForm('login',this)">Iniciar sesión</button>
+        <button class="account-tab" type="button" onclick="showAccountForm('register',this)">Crear cuenta</button>
+      </div>
+
+      <form class="account-form active" id="login-form" onsubmit="loginAccount(event)" novalidate>
+        <label>Correo electrónico<input id="login-email" type="email" placeholder="nombre@correo.com" autocomplete="email"></label>
+        <label>Contraseña<span class="password-wrap"><input id="login-password" type="password" placeholder="Tu contraseña" autocomplete="current-password"><button type="button" onclick="togglePassword('login-password',this)">Ver</button></span></label>
+        <p class="account-error" id="login-error"></p>
+        <button class="account-primary" type="submit">Ingresar a mi cuenta →</button>
+      </form>
+
+      <form class="account-form" id="register-form" onsubmit="registerAccount(event)" novalidate>
+        <div class="account-fields">
+          <label>Nombre completo<input id="register-name" placeholder="Tu nombre y apellido" autocomplete="name"></label>
+          <label>Celular<input id="register-phone" inputmode="numeric" maxlength="9" placeholder="987 654 321" autocomplete="tel"></label>
+        </div>
+        <label>Correo electrónico<input id="register-email" type="email" placeholder="nombre@correo.com" autocomplete="email"></label>
+        <label>Contraseña<span class="password-wrap"><input id="register-password" type="password" minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password"><button type="button" onclick="togglePassword('register-password',this)">Ver</button></span></label>
+        <p class="account-error" id="register-error"></p>
+        <button class="account-primary" type="submit">Crear mi cuenta →</button>
+      </form>
+      <small class="account-demo-note">Demostración académica: los datos se guardan únicamente en este navegador.</small>
+    </div>
+
+    <div class="account-profile" id="account-profile">
+      <div class="profile-head">
+        <div class="profile-avatar" id="profile-avatar">MS</div>
+        <div><div class="checkout-kicker">MI CUENTA</div><h2 id="profile-name">Cliente</h2><p id="profile-email"></p></div>
+      </div>
+      <div class="profile-stats">
+        <div><b id="profile-orders-count">0</b><span>Pedidos</span></div>
+        <div><b id="profile-spent">S/ 0</b><span>Total comprado</span></div>
+      </div>
+      <div class="orders-head"><h3>Historial de pedidos</h3><span>Últimas compras</span></div>
+      <div class="orders-list" id="orders-list"></div>
+      <button class="account-logout" onclick="logoutAccount()">Cerrar sesión</button>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════ PAGE: HOME ══════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-l">
+      <div class="hero-chip">
+        <span class="hero-chip-dot"></span>
+        NUEVA GENERACIÓN · 2026
+      </div>
+      <h1 class="hero-h1">Tecnología<br>que impulsa<br><span class="hero-em">tu futuro.</span></h1>
+      <p class="hero-p">Descubre smartphones premium, rendimiento de otro nivel y entrega express en Lima. Tu próxima experiencia comienza aquí.</p>
+      <div class="hero-btns">
+        <button class="btn-blk" onclick="goto('products')">Ver colección <span>→</span></button>
+        <button class="btn-out" onclick="goto('detail',1)">Explorar Galaxy S25 Ultra</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><b>120+</b><span>Modelos</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><b>15 K</b><span>Clientes</span></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><b>4.9 ★</b><span>Valoración</span></div>
+      </div>
+    </div>
+    <div class="hero-r">
+      <div class="hero-glow"></div>
+      <div class="hero-phone-wrap">
+        <div class="hero-phone"><img src="SAMSUNG GALAXY S25 ULTRA.webp" alt="Samsung Galaxy S25 Ultra"></div>
+        <div class="hero-tag-float hero-tag-top">
+          <span class="htf-label">Procesador</span>
+          <span class="htf-val">Snapdragon 8 Elite</span>
+        </div>
+        <div class="hero-tag-float hero-tag-bot hero-tag-gold">
+          <span class="htf-label">NUEVO</span>
+          <span class="htf-val">Galaxy S25 Ultra</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER MARCAS -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>SAMSUNG</span><span class="tdot">·</span>
+      <span>GOOGLE</span><span class="tdot">·</span>
+      <span>ONEPLUS</span><span class="tdot">·</span>
+      <span>MOTOROLA</span><span class="tdot">·</span>
+      <span>XIAOMI</span><span class="tdot">·</span>
+      <span>OPPO</span><span class="tdot">·</span>
+      <span>SAMSUNG</span><span class="tdot">·</span>
+      <span>GOOGLE</span><span class="tdot">·</span>
+      <span>ONEPLUS</span><span class="tdot">·</span>
+      <span>MOTOROLA</span><span class="tdot">·</span>
+      <span>XIAOMI</span><span class="tdot">·</span>
+      <span>OPPO</span><span class="tdot">·</span>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS DESTACADOS -->
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">MÁS VENDIDOS</div>
+        <h2 class="sec-title">Tendencias ahora</h2>
+      </div>
+      <a class="sec-link" onclick="goto('products')">Ver todos →</a>
+    </div>
+    <div class="grid-4" id="home-products">
+      <!-- Card featured -->
+      <div class="pcard pcard-feat" onclick="goto('detail',1)">
+        <div class="pcard-img pcard-img-dark">
+          <span class="pcard-emoji" style="font-size:100px">📱</span>
+          <div class="pcard-disc">−15%</div>
+          <button class="pcard-wish" onclick="event.stopPropagation()">♡</button>
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-meta"><span>GAMA ALTA</span><span>Samsung</span></div>
+          <div class="pcard-name">Galaxy Pro 15</div>
+          <div class="pcard-prices">
+            <span class="pcard-price pcard-price-gold">S/ 4,799</span>
+            <span class="pcard-old">S/ 5,299</span>
+          </div>
+          <div class="pcard-foot">
+            <button class="btn-add btn-add-gold" onclick="event.stopPropagation();addCart(1)">Agregar</button>
+            <span class="pcard-rat">★ 4.9</span>
+          </div>
+        </div>
+      </div>
+      <!-- Cards normales -->
+      <div class="pcard" onclick="goto('detail',2)">
+        <div class="pcard-img" style="background:#F8F4EF">
+          <span class="pcard-emoji">📱</span>
+          <button class="pcard-wish" onclick="event.stopPropagation()">♡</button>
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-meta"><span>GAMA ALTA</span><span>Google</span></div>
+          <div class="pcard-name">Pixel Ultra 9</div>
+          <div class="pcard-prices"><span class="pcard-price">S/ 4,069</span></div>
+          <div class="pcard-foot">
+            <button class="btn-add" onclick="event.stopPropagation();addCart(2)">Agregar</button>
+            <span class="pcard-rat">★ 4.8</span>
+          </div>
+        </div>
+      </div>
+      <div class="pcard" onclick="goto('detail',3)">
+        <div class="pcard-img" style="background:#EEF2F8">
+          <span class="pcard-emoji">📱</span>
+          <div class="pcard-disc">−15%</div>
+          <button class="pcard-wish" onclick="event.stopPropagation()">♡</button>
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-meta"><span>MEDIA-ALTA</span><span>OnePlus</span></div>
+          <div class="pcard-name">Nova X12</div>
+          <div class="pcard-prices">
+            <span class="pcard-price">S/ 2,929</span>
+            <span class="pcard-old">S/ 3,299</span>
+          </div>
+          <div class="pcard-foot">
+            <button class="btn-add" onclick="event.stopPropagation();addCart(3)">Agregar</button>
+            <span class="pcard-rat">★ 4.7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORÍAS -->
+  <section class="sec sec-gray">
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">EXPLORAR</div>
+        <h2 class="sec-title">Por categoría</h2>
+      </div>
+    </div>
+    <div class="cats-grid">
+      <div class="ccat" onclick="goto('products','Smartphones')"><span class="ccat-icon">📱</span><div class="ccat-name">Smartphones</div><div class="ccat-n">48 modelos</div></div>
+      <div class="ccat" onclick="goto('products','Accesorios')"><span class="ccat-icon">🎧</span><div class="ccat-name">Audio</div><div class="ccat-n">24 productos</div></div>
+      <div class="ccat" onclick="goto('products','Accesorios')"><span class="ccat-icon">🔋</span><div class="ccat-name">Cargadores</div><div class="ccat-n">18 productos</div></div>
+      <div class="ccat" onclick="goto('products','Accesorios')"><span class="ccat-icon">🛡️</span><div class="ccat-name">Protección</div><div class="ccat-n">32 productos</div></div>
+      <div class="ccat" onclick="goto('products','Accesorios')"><span class="ccat-icon">🎮</span><div class="ccat-name">Gaming</div><div class="ccat-n">12 productos</div></div>
+      <div class="ccat" onclick="goto('products','Accesorios')"><span class="ccat-icon">🚗</span><div class="ccat-name">Soporte</div><div class="ccat-n">9 productos</div></div>
+    </div>
+  </section>
+
+  <!-- BANNER FEATURED -->
+  <section class="sec sec-dark">
+    <div class="feat-grid">
+      <div class="feat-l">
+        <div class="feat-chip">⭐ DESTACADO DEL MES</div>
+        <h2 class="feat-title">Galaxy<br>Pro 15</h2>
+        <p class="feat-desc">Cámara de 200MP, pantalla Dynamic AMOLED 2X y batería de 5000mAh que dura todo el día.</p>
+        <div class="feat-specs">
+          <div class="fspec"><div class="fspec-l">Pantalla</div><div class="fspec-v">6.8" AMOLED</div></div>
+          <div class="fspec"><div class="fspec-l">Cámara</div><div class="fspec-v">200 MP</div></div>
+          <div class="fspec"><div class="fspec-l">RAM</div><div class="fspec-v">12 GB</div></div>
+          <div class="fspec"><div class="fspec-l">Batería</div><div class="fspec-v">5000 mAh</div></div>
+        </div>
+        <button class="btn-gold" onclick="goto('detail',1)">Ver detalles →</button>
+      </div>
+      <div class="feat-r">
+        <span class="feat-phone"><img src="SAMSUNG GALAXY S25 ULTRA.webp" alt="Samsung Galaxy S25 Ultra"></span>
+        <div class="feat-ptag">
+          <s class="feat-ptag-old">S/ 5,299</s>
+          <span class="feat-ptag-new">S/ 4,799</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACCESORIOS -->
+  <section class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">COMPLEMENTOS</div>
+        <h2 class="sec-title">Accesorios esenciales</h2>
+      </div>
+      <a class="sec-link" onclick="goto('products','Accesorios')">Ver todos →</a>
+    </div>
+    <div class="grid-4" id="home-accessories">
+      <div class="acard"><div class="acard-img">🎧</div><div class="acard-body"><div class="acard-name">AirPods Ultra Pro</div><div class="acard-type">Audio</div><div class="acard-row"><span class="acard-price">S/ 599</span><button class="btn-add" onclick="addCart(7)">+</button></div></div></div>
+      <div class="acard"><div class="acard-img">🔋</div><div class="acard-body"><div class="acard-name">Power Bank 20000mAh</div><div class="acard-type">Cargadores · Xiaomi</div><div class="acard-row"><span class="acard-price">S/ 189</span><button class="btn-add" onclick="addCart(8)">+</button></div></div></div>
+      <div class="acard"><div class="acard-img">🛡️</div><div class="acard-body"><div class="acard-name">Funda Premium Silicona</div><div class="acard-type">Protección</div><div class="acard-row"><span class="acard-price">S/ 49</span><button class="btn-add" onclick="addCart(9)">+</button></div></div></div>
+      <div class="acard"><div class="acard-img">🚗</div><div class="acard-body"><div class="acard-name">Soporte Vehicular Magnético</div><div class="acard-type">Soporte</div><div class="acard-row"><span class="acard-price">S/ 79</span><button class="btn-add" onclick="addCart(10)">+</button></div></div></div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIOS -->
+  <section class="sec sec-gray">
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">RESEÑAS</div>
+        <h2 class="sec-title">Lo que dicen nuestros clientes</h2>
+      </div>
+    </div>
+    <div class="tgrid">
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-txt">"Increíble cámara, la batería dura todo el día. Envío rapidísimo a Miraflores. 100% recomendado."</p><div class="tcard-auth"><div class="tcard-av">CP</div><div><div class="tcard-name">Carlos P.</div><div class="tcard-prod">Galaxy Pro 15</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-txt">"Las fotos con IA son espectaculares. No me arrepiento de la compra. MovilStore tiene los mejores precios."</p><div class="tcard-auth"><div class="tcard-av">MA</div><div><div class="tcard-name">María A.</div><div class="tcard-prod">Pixel Ultra 9</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★☆</div><p class="tcard-txt">"Muy buena tienda. Precios competitivos y atención rápida. El Nova X12 funciona de maravilla."</p><div class="tcard-auth"><div class="tcard-av">JR</div><div><div class="tcard-name">Jorge R.</div><div class="tcard-prod">Nova X12</div></div></div></div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <div class="nl">
+    <div class="nl-l"><h3 class="nl-h">Mantente al día</h3><p class="nl-p">Ofertas y lanzamientos exclusivos directo a tu correo.</p></div>
+    <form class="nl-form" onsubmit="return false">
+      <input class="nl-input" type="email" placeholder="tu@correo.com"/>
+      <button class="nl-btn" type="submit">Suscribirme</button>
+    </form>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">
+          <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="6" fill="rgba(255,255,255,.12)"/><rect x="6.5" y="3" width="9" height="16" rx="2.5" stroke="white" stroke-width="1.4"/><circle cx="11" cy="17" r="1.2" fill="white"/></svg>
+          MovilStore
+        </div>
+        <p class="footer-desc">Tu tienda especializada en smartphones premium. Los mejores dispositivos al mejor precio en Perú.</p>
+        <div class="footer-socials">
+          <button class="fsoc">f</button>
+          <button class="fsoc">ig</button>
+          <button class="fsoc">tw</button>
+          <button class="fsoc">yt</button>
+        </div>
+      </div>
+      <div class="fcol"><h4>Productos</h4><ul><li onclick="goto('products')">Smartphones</li><li onclick="goto('products','Accesorios')">Accesorios</li><li onclick="goto('products')">Ofertas</li><li>Novedades</li></ul></div>
+      <div class="fcol"><h4>Empresa</h4><ul><li>Nosotros</li><li>Blog</li><li>Trabaja con nosotros</li><li>Contacto</li></ul></div>
+      <div class="fcol"><h4>Ayuda</h4><ul><li>Envíos</li><li>Garantía</li><li>FAQ</li><li>Servicio técnico</li></ul></div>
+    </div>
+    <div class="footer-bot">
+      <span>© 2025 MovilStore. Todos los derechos reservados.</span>
+      <span>Hecho con ♥ en Lima, Perú</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════ PAGE: PRODUCTS ══════════════════ -->
+<div class="page" id="page-products">
+  <div class="prods-hero">
+    <h1 class="prods-h1" id="products-title">Todos los Productos</h1>
+    <p class="prods-p" id="products-subtitle">Explora nuestra colección completa de smartphones y accesorios premium</p>
+  </div>
+  <div class="filters" id="filters">
+    <div class="fg">
+      <span class="fg-label">TIPO</span>
+      <button class="fpill active" onclick="filt(this,'tipo','Todos')">Todos</button>
+      <button class="fpill" onclick="filt(this,'tipo','Smartphones')">Smartphones</button>
+      <button class="fpill" onclick="filt(this,'tipo','Accesorios')">Accesorios</button>
+    </div>
+    <div class="fg">
+      <span class="fg-label">GAMA</span>
+      <button class="fpill" onclick="filt(this,'gama','Gama Alta')">Alta</button>
+      <button class="fpill" onclick="filt(this,'gama','Gama Media-Alta')">Media-Alta</button>
+      <button class="fpill" onclick="filt(this,'gama','Gama Media')">Media</button>
+    </div>
+    <div class="fg">
+      <span class="fg-label">MARCA</span>
+      <button class="fpill" onclick="filt(this,'marca','Samsung')">Samsung</button>
+      <button class="fpill" onclick="filt(this,'marca','Apple')">Apple</button>
+      <button class="fpill" onclick="filt(this,'marca','Xiaomi')">Xiaomi</button>
+      <button class="fpill" onclick="filt(this,'marca','Huawei')">Huawei</button>
+      <button class="fpill" onclick="filt(this,'marca','Honor')">Honor</button>
+    </div>
+  </div>
+  <div class="prods-content">
+    <div class="grid-4" id="pgrid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE: DETAIL ══════════════════ -->
+<div class="page" id="page-detail">
+  <div class="detail-wrap" id="detail-wrap"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
